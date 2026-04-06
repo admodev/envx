@@ -1,0 +1,17 @@
+[package]
+name = "envx"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "envx"
+path = "src/main.rs"
+
+[dependencies]
+clap        = { version = "4", features = ["derive"] }
+owo-colors  = "3"
+anyhow      = "1"
+age         = "0.10"
+rand        = "0.8"
+indexmap    = "2"
+rpassword   = "7"

@@ -2,6 +2,8 @@
 name = "envx"
 version = "0.1.0"
 edition = "2021"
+description = "A CLI for .env file management: diff, audit, and encrypt"
+license = "MIT"
 
 [[bin]]
 name = "envx"

@@ -1,8 +1,15 @@
+//! Semantic diff between two `.env` files.
+//!
+//! Values for keys that match common sensitive patterns (`SECRET`, `KEY`,
+//! `TOKEN`, `PASSWORD`, `PASS`, `PWD`) are redacted with bullet characters so
+//! secrets are never echoed to the terminal.
+
 use crate::parser;
 use anyhow::Result;
 use owo_colors::OwoColorize;
 use std::path::Path;
 
+/// Key substrings that trigger value redaction.
 const SENSITIVE_PATTERNS: &[&str] = &["SECRET", "KEY", "TOKEN", "PASSWORD", "PASS", "PWD"];
 
 fn is_sensitive(key: &str) -> bool {
@@ -14,6 +21,20 @@ fn redact(value: &str) -> String {
     "•".repeat(value.len().max(7))
 }
 
+/// Compare `file_a` and `file_b` and print a coloured semantic diff.
+///
+/// Keys present in both files with equal values are shown dimmed.  Changed
+/// values are shown as `- old` / `+ new` lines (or redacted for sensitive
+/// keys).  Keys only in one file are shown as removed (`-`) or added (`+`).
+///
+/// # Exit behaviour
+///
+/// Calls `std::process::exit(1)` when any difference is found so the
+/// function can be used as a CI gate.
+///
+/// # Errors
+///
+/// Returns an error if either file cannot be parsed.
 pub fn run(file_a: &Path, file_b: &Path) -> Result<()> {
     let map_a = parser::parse(file_a)?;
     let map_b = parser::parse(file_b)?;

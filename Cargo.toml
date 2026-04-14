@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 description = "A CLI for .env file management: diff, audit, and encrypt"
 license = "MIT"
+repository = "https://github.com/admodev/envx"
+documentation = "https://docs.rs/envx-secure"
+keywords = ["env", "dotenv", "cli", "audit", "encrypt"]
+categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
 name = "envx"

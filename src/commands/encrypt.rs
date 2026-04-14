@@ -1,7 +1,26 @@
+//! Encrypt and decrypt `.env` files using [age] passphrase mode.
+//!
+//! Both functions prompt for a passphrase interactively via
+//! [`rpassword`] so the secret is never echoed or stored in shell history.
+//!
+//! [age]: https://age-encryption.org
+
 use anyhow::{bail, Context, Result};
 use owo_colors::OwoColorize;
 use std::path::Path;
 
+/// Encrypt `file` with a passphrase and write the ciphertext to `<file>.age`.
+///
+/// Prompts for the passphrase twice; aborts if the two entries do not match.
+/// The original plaintext file is left untouched.
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - the passphrase prompts fail (e.g. not a TTY),
+/// - the two passphrase entries do not match,
+/// - the source file cannot be read, or
+/// - the output file cannot be written.
 pub fn run_encrypt(file: &Path) -> Result<()> {
     let pass1 = rpassword::prompt_password("Passphrase: ").context("failed to read passphrase")?;
     let pass2 =
@@ -29,6 +48,20 @@ pub fn run_encrypt(file: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Decrypt an age-encrypted `file` and write the plaintext beside it.
+///
+/// `file` must have an `.age` extension.  The output path is derived by
+/// stripping that suffix (e.g. `.env.age` → `.env`).
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - `file` does not have an `.age` extension,
+/// - the passphrase prompt fails,
+/// - the source file cannot be read,
+/// - decryption fails (wrong passphrase, corrupt file, wrong recipient type),
+///   or
+/// - the output file cannot be written.
 pub fn run_decrypt(file: &Path) -> Result<()> {
     if file.extension().and_then(|e| e.to_str()) != Some("age") {
         bail!("file does not have .age extension: {}", file.display());

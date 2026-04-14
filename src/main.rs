@@ -1,11 +1,7 @@
-mod cli;
-mod commands;
-mod crypto;
-mod parser;
-
 use anyhow::Result;
 use clap::Parser;
-use cli::{Cli, Command};
+use envx_secure::cli::{Cli, Command};
+use envx_secure::commands;
 use owo_colors::OwoColorize;
 
 fn run() -> Result<()> {

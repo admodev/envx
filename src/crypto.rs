@@ -1,8 +1,19 @@
+//! Thin wrappers around the [`age`] passphrase encrypt/decrypt primitives.
+//!
+//! Both functions operate on raw byte slices so they are agnostic about file
+//! format; the higher-level file I/O lives in [`crate::commands::encrypt`].
+
 use age::secrecy::SecretString;
 use anyhow::{Context, Result};
 use std::io::{Read, Write};
 
-/// Encrypts plaintext bytes with a passphrase using age.
+/// Encrypt `data` with `passphrase` using age passphrase mode.
+///
+/// Returns the raw ciphertext bytes (armored age format).
+///
+/// # Errors
+///
+/// Propagates errors from the age encryptor if the underlying I/O fails.
 pub fn encrypt(data: &[u8], passphrase: &str) -> Result<Vec<u8>> {
     let secret = SecretString::from(passphrase.to_string());
     let encryptor = age::Encryptor::with_user_passphrase(secret);
@@ -20,7 +31,18 @@ pub fn encrypt(data: &[u8], passphrase: &str) -> Result<Vec<u8>> {
     Ok(output)
 }
 
-/// Decrypts age-encrypted bytes with a passphrase.
+/// Decrypt age-encrypted `data` with `passphrase`.
+///
+/// `data` must have been produced by [`encrypt`] (passphrase mode only —
+/// public-key recipients are rejected).
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - the age header cannot be parsed,
+/// - the file was encrypted with a public-key recipient instead of a passphrase,
+/// - the passphrase is wrong, or
+/// - the underlying I/O fails.
 pub fn decrypt(data: &[u8], passphrase: &str) -> Result<Vec<u8>> {
     let secret = SecretString::from(passphrase.to_string());
 
